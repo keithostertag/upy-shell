@@ -311,6 +311,33 @@ class Shell(cmd.Cmd):
         self.stdout.write('List directory contents.\n' +
                           'Use ls -a to show hidden files\n')
 
+def help_cp(self):
+    self.stdout.write('Copies contents of one text file to a new text file\n' +
+                        'syntax: cp source.py destination.py\n')
+
+def do_cp(self, line):
+    args = self.line_to_args(line)
+    source = self.resolve_path(args[0])
+    mode = get_mode(source)
+    if not mode_exists(mode):
+        self.stderr.write("Cannot access '%s': No such file\n" % source)
+        return 0
+    if not mode_isfile(mode):
+        self.stderr.write("'%s': is not a file\n" % filename)
+        return 0
+    destination = self.resolve_path(args[1])
+    with open(destination, "w") as dest_file:
+        try:
+            with open(source, 'r') as txtfile:
+                for line in txtfile:
+                    try:
+                        dest_file.write(line)
+                    except OSError:
+                        self.stderr.write("OSError for '%s'\n" % line)
+        except OSError:
+            self.stderr.write("OSError for '%s'\n" % destination)
+
+
     def do_ls(self, line):
         args = self.line_to_args(line)
         show_invisible = False
